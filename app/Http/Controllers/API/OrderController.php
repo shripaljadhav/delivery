@@ -43,12 +43,23 @@ class OrderController extends Controller
         $order->when(request('client_id'), function ($q) {
             return $q->where('client_id', request('client_id'));
         });
-
+        
         $order->when(request('delivery_man_id'), function ($query) {
+             return $query->where(function($query){
+                $query->whereHas('delivery_man', function ($q)  {
+                    $q->where('delivery_man_id', request('delivery_man_id'));
+                })
+                ->orWhereHas('bidrequests', function ($q){
+                    $q->where('delivery_man_id', request('delivery_man_id'));
+                });
+            });
+       }); 
+
+        /* $order->when(request('delivery_man_id'), function ($query) {
             return $query->whereHas('delivery_man', function ($q) {
                 $q->where('delivery_man_id', request('delivery_man_id'));
             });
-        });
+        }); */
 
         $order->when(request('country_id'), function ($q) {
             return $q->where('country_id', request('country_id'));
@@ -130,9 +141,11 @@ class OrderController extends Controller
         }
 
         $order = $order->orderBy('date', 'desc')->paginate($per_page);
+      
         $items = OrderResource::collection($order);
 
-        $wallet_data = Wallet::where('user_id', auth()->id())->first();
+        $wallet_data = Wallet::with(['user:id,check_without_wallet'])->where('user_id', auth()->id())->first();
+      
         $response = [
             'pagination' => json_pagination_response($items),
             'data' => $items,
@@ -325,11 +338,12 @@ class OrderController extends Controller
                     : $vehicle->price;
             }
 
-            if ($insurance_allow && $request->is_insurance) {
+             if ($insurance_allow && $request->is_insurance) {
                 $insurance = $request->insurance_amount * $insurance_value / 100;
-            }
+            } 
 
-            $totalAmount = $min_weight + $min_distance + $vehicle_details + $insurance + $city->fixed_charges;
+            //$totalAmount = $min_weight + $min_distance + $vehicle_details + $insurance + $city->fixed_charges;
+            $totalAmount = $min_weight + $min_distance + $vehicle_details + $city->fixed_charges;
 
             foreach ($extra_charge as $charges) {
                 if ($charges->charges_type == "fixed") {
@@ -352,7 +366,7 @@ class OrderController extends Controller
             'diff_weight' => $weight_difference,
             'diff_distance' => $distance_difference,
             'total_amount' =>(float) $totalAmountAll,
-            'base_total' => $totalAmount,
+            'base_total' => $totalAmount + $insurance,
         ]);
     }
     public function orderPrintList(Request $request)
@@ -387,7 +401,7 @@ class OrderController extends Controller
     {
         $orderbid = OrderBid::myBid()
             ->whereHas('order', function ($query) {
-                $query->where('status', '!=', 'cancelled');
+                $query->where('status', '!=', 'cancelled')->where('bid_type', '=', 1);
             })
             ->orderBy('id', 'desc')
             ->get();

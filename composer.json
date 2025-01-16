@@ -11,6 +11,7 @@
         "fruitcake/laravel-cors": "^2.0",
         "google/cloud-firestore": "^1.47",
         "grimzy/laravel-mysql-spatial": "^5.0",
+        "grpc/grpc": "^1.57",
         "guzzlehttp/guzzle": "^7.4.4",
         "kreait/laravel-firebase": "*",
         "laravel-notification-channels/onesignal": "^2.3",

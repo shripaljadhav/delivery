@@ -48,6 +48,15 @@
             </div>
         </div>
     @endif
+    @if($action_type == 'check_without_wallet')
+        <div class="custom-switch custom-switch-text custom-switch-color custom-control-inline m-0">
+            <div class="custom-switch-inner">
+                <input type="checkbox" class="custom-control-input bg-success change_check_without_wallet" data-type="user" id="{{ $data->id }}" data-id="{{ $data->id }}" {{ ($data->check_without_wallet == '0' ? 0 : 1) ? 'checked' : '' }} value="{{ $data->id }}">
+                <label class="custom-control-label" for="{{ $data->id }}" data-on-label="Yes" data-off-label="No"></label>
+            </div>
+        </div> 
+    @endif
+     
     @if($action_type == 'verify')
         <div class="custom-switch custom-switch-text custom-switch-color custom-control-inline">
             <div class="custom-switch-inner">

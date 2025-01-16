@@ -12,12 +12,13 @@ use App\Models\WalletHistory;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Http\Resources\DeliveryManEarningResource;
-
+use Log;
 class PaymentController extends Controller
 {
     public function paymentSave(Request $request)
     {
         $data = $request->all();
+        Log::info('Payment save'. json_encode($data));
         $data['datetime'] = isset($request->datetime) ? date('Y-m-d H:i:s',strtotime($request->datetime)) : date('Y-m-d H:i:s');
 
         if( request('payment_type') == 'wallet' ) {
@@ -39,6 +40,7 @@ class PaymentController extends Controller
             if( !in_array(request('payment_type'), ['cash','wallet']) ) {
                 $data['received_by'] = 'admin';
             }
+            Log::info('Payment save');
             $result = Payment::updateOrCreate(['id' => $request->id],$data);
             if( $result->payment_status == 'paid') {
                 if( $result->payment_type == 'wallet') {

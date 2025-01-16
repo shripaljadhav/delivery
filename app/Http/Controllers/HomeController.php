@@ -405,7 +405,28 @@ class HomeController extends Controller
     {
         return view();
     }
+    
+    public function changeCheckWithoutWallet(Request $request)
+    {
+        $message_form = "";
+        $message = __('message.update_form', ['form' => __('message.status')]);
+        $user = User::find($request->id);
+        if($request->check_without_wallet != null){
+            $user->check_without_wallet = $request->check_without_wallet;
+        }
+        
+         $user->save();
+         
+          if ($message_form != null) {
+            $message =  __('message.added_form', ['form' => $message_form]);
+            if ($request->check_without_wallet == 0) {
+                $message = __('message.remove_form', ['form' => $message_form]);
+            }
+        }
 
+        return json_custom_response(['message' => $message, 'status' => true]);
+    }
+    
     public function changeStatus(Request $request)
     {
         $type = $request->type;

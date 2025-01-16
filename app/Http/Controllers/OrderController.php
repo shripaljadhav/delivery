@@ -38,7 +38,7 @@ use App\Models\Reschedule;
 use App\Notifications\CustomerSupportNotification;
 use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
-
+use Log;
 class OrderController extends Controller
 {
     use OrderTrait, PaymentTrait;
@@ -132,7 +132,7 @@ class OrderController extends Controller
     {
         $data = $request->all();
         $symbol = $request->input('packaging_symbols');
-
+        Log::info($data);
         if (is_array($symbol)) {
             $symbols = [];
             foreach ($symbol as $charge) {
@@ -155,7 +155,7 @@ class OrderController extends Controller
             $data['vehicle_data'] = Vehicle::where('id', $request->input('vehicle_id'))->first() ?? null;
         }
 
-        if (!$request->is('api/*')) {
+        if (!$request->is('api/')) {
             $extraCharges = $request->input('extra_charges');
             if ($extraCharges) {
                 $extraCharges = json_decode($extraCharges, true);
@@ -178,6 +178,7 @@ class OrderController extends Controller
 
         $result = Order::updateOrCreate(['id' => $request->id], $data);
         $message = __('message.update_form', ['form' => __('message.order')]);
+         Log::info($result);
         if ($result->wasRecentlyCreated) {
             if ($request->cancelorderreturn == 1) {
                 $message = __('message.return_order');
@@ -368,10 +369,63 @@ class OrderController extends Controller
      */
     public function update(Request $request, $id)
     {
+        \Log::info($request->all());
         $order = Order::findOrFail($id);
 
         $old_status = $order->status;
+        if (request()->has('status') && request('status') == 'active') {
+           $deliveryManId = auth()->id();
+            $history_data = [
+                'history_type' => 'bid_accept',
+                'order_id' => $order->id,
+                'order' => $order,
+                'deliveryManId' => $deliveryManId,
+            ];
+            saveOrderHistory($history_data);
+            $order->delivery_man_id = $deliveryManId;
+            $order->status = 'courier_picked_up';
+            $order->save();
+            
+            $bid = OrderBid::where('order_id', $order->id)
+                ->where('delivery_man_id', $deliveryManId)
+                ->first();
+                
+            if ($bid) {
+                $bid->is_bid_accept = 1;
+                $bid->save();
 
+                OrderBid::where('order_id', $order->id)
+                    ->where('delivery_man_id', '!=', $deliveryManId)
+                    ->update(['is_bid_accept' => 2]);
+            }
+            
+            $history_data = [
+                'history_type' => 'courier_picked_up',
+                'order_id' => $order->id,
+                'order' => $order,
+            ];
+            saveOrderHistory($history_data);
+            
+             $document_name = 'order_' . $order->id;
+                $firebaseData = app('firebase.firestore')->database()->collection('delivery_man')->document($document_name);
+                if ($firebaseData) {
+                    $orderData = [
+                        'delivery_man_ids' => (array)$order->delivery_man_id ?? [],
+                        'order_id' => $order->id ?? '',
+                        'client_id' => $order->client_id ?? '',
+                        'status' => $order->status ?? '',
+                        'client_name' => $order->client->name,
+                        'client_email' => $order->client->email,
+                        'client_image' => getSingleMedia($order->client, 'profile_image', null),
+                        'delivery_man_listening' => 0,
+                        'payment_status' => '',
+                        'payment_type' => '',
+                        'order_has_bids' => $order->bid_type == 1 ? 1 : 0,
+                        'created_at' => $order->created_at,
+                    ];
+                }
+                $firebaseData->set($orderData);
+        }
         try {
             DB::beginTransaction();
 
@@ -388,7 +442,7 @@ class OrderController extends Controller
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            // \Log::info('error-'.$e);
+             \Log::info('error-'.$e);
             return json_custom_response($e);
         }
 
@@ -1175,6 +1229,10 @@ class OrderController extends Controller
                 OrderBid::where('order_id', $orderData->id)
                     ->where('delivery_man_id', '!=', $deliveryManId)
                     ->update(['is_bid_accept' => 2]);
+                    
+                 $orderDataupdate = Order::find($request->id);
+                 $orderDataupdate->total_amount = $bid->bid_amount;
+                 $orderDataupdate->save();
             }
             $history_data = [
                 'history_type' => 'courier_assigned',

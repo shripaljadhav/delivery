@@ -23,6 +23,11 @@ class DeliverymanDataTable extends DataTable
             ->editColumn('checkbox', function ($row) {
                 return '<input type="checkbox" class=" select-table-row-checked-values" id="datatable-row-' . $row->id . '" name="datatable_ids[]" value="' . $row->id . '" onclick="dataTableRowCheck(' . $row->id . ')">';
             })
+            ->editColumn('check_without_wallet', function ($data) {
+                $action_type = 'check_without_wallet';
+                $deleted_at = null;
+                return view('deliveryman.action', compact('data', 'action_type', 'deleted_at'))->render();
+            })
             ->editColumn('status', function ($data) {
                 $action_type = 'status';
                 $deleted_at = null;
@@ -134,7 +139,7 @@ class DeliverymanDataTable extends DataTable
                     return view('deliveryman.action', compact('data', 'action_type', 'deleted_at'))->render();
                 }
             })
-            ->rawColumns(['checkbox', 'action', 'status', 'deliveryman','is_autoverified_email','is_autoverified_mobile','is_autoverified_document']);
+            ->rawColumns(['checkbox', 'action', 'status', 'check_without_wallet', 'deliveryman','is_autoverified_email','is_autoverified_mobile','is_autoverified_document']);
     }
 
     /**
@@ -205,6 +210,7 @@ class DeliverymanDataTable extends DataTable
     protected function getColumns()
     {
         $status = $this->status;
+        $check_without_wallet = $this->check_without_wallet;
 
         $columns = [
             Column::make('checkbox')
@@ -226,7 +232,12 @@ class DeliverymanDataTable extends DataTable
             ['data' => 'created_at', 'name' => 'created_at', 'title' => __('message.created_at')],
             ['data' => 'last_actived_at', 'name' => 'last_actived_at', 'title' => __('message.last_active')],
         ];
-
+      
+            $columns[] = Column::make('check_without_wallet', 'check_without_wallet')
+                ->title('Check Without Wallet')
+                ->visible(true)
+                ->orderable(false);
+        
         if ($status === 'active' || $status === 'inactive') {
             $columns[] = Column::make('status', 'status')
                 ->title(__('message.status'))

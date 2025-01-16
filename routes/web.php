@@ -118,6 +118,7 @@ Route::group(['middleware' => ['auth', 'verified', 'assign_user_role']], functio
     Route::resource('role', RoleController::class);
 
     Route::get('changeStatus', [HomeController::class, 'changeStatus'])->name('changeStatus');
+    Route::get('changeCheckWithoutWallet', [HomeController::class, 'changeCheckWithoutWallet'])->name('changeCheckWithoutWallet');
     Route::get('changeVerify', [HomeController::class, 'changeVerify'])->name('changeVerify');
 
     Route::get('setting/{page?}', [SettingController::class, 'settings'])->name('setting.index');

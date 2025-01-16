@@ -60,6 +60,7 @@ class OrderDetailResource extends JsonResource
             'payment_collect_from'          => $this->payment_collect_from,
             'delivery_man_id'               => $this->delivery_man_id,
             'delivery_man_name'             => optional($this->delivery_man)->name,
+            'check_without_wallet'          => optional($this->delivery_man)->check_without_wallet,
             'fixed_charges'                 => $this->fixed_charges,
             'extra_charges'                 => $this->extra_charges,
             'total_amount'                  => $this->total_amount,

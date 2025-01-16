@@ -32,23 +32,27 @@ trait OrderTrait
             $unit = isset($app_setting->distance_unit) ? $app_setting->distance_unit : 'km';
             $radius = isset($app_setting->distance) ? $app_setting->distance : 50;
             $unit_value = convertUnitvalue($unit);
+            
+            
+            $nearby_deliveryperson = User::selectRaw("id, user_type, latitude, longitude, player_id,( $unit_value * acos( cos( radians($latitude) ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians($longitude) ) + sin( radians($latitude) ) * sin( radians( latitude ) ) ) ) AS distance")
+            ->where('city_id', $order_data->city_id)
+            ->where('status', 1)
+            ->where('user_type', 'delivery_man')
+            ->having('distance', '<=', $radius)
+            ->orderBy('distance', 'asc')
+            ->where(function ($query) {
+                $query->whereNotNull('email_verified_at')
+                    ->whereNotNull('otp_verify_at')
+                    ->whereNotNull('document_verified_at');
+            });
 
-            $nearby_deliveryperson = User::selectRaw("id, user_type, vehicle_id, latitude, longitude, ( $unit_value * acos( cos( radians($latitude) ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians($longitude) ) + sin( radians($latitude) ) * sin( radians( latitude ) ) ) ) AS distance")
-                ->where('city_id', $order_data->city_id)
-                ->where('status', 1)
-                ->where('user_type', 'delivery_man')
-                ->where('vehicle_id', $order_data->vehicle_id)
-                ->having('distance', '<=', $radius)
-                ->orderBy('distance', 'asc')
-                ->where(function ($query) {
-                    $query->whereNotNull('email_verified_at')
-                        ->whereNotNull('otp_verify_at')
-                        ->whereNotNull('document_verified_at');
-                });
 
-            $nearby_deliveryperson = $nearby_deliveryperson->when(request('cancelled_delivery_man_ids'), function ($q) {
-                return $q->whereNotIn('id', request('cancelled_delivery_man_ids'));
-            })->first();
+        $nearby_deliveryperson = $nearby_deliveryperson->when(request('cancelled_delivery_man_ids'), function ($q) {
+            return $q->whereNotIn('id', request('cancelled_delivery_man_ids'));
+        })->get();
+
+
+           
 
             if (request('cancelled_delivery_man_ids') != null) {
                 $history_data = [
@@ -58,12 +62,41 @@ trait OrderTrait
                 ];
                 saveOrderHistory($history_data);
             }
+            if ($nearby_deliveryperson->isEmpty()) {
+                $this->updateFirebaseOrderData($order_data, []);
+            }
+            $delivery_man_ids = [];
+            foreach ($nearby_deliveryperson as $nearby_delivery_man) {
+                if ($nearby_delivery_man->player_id) {
+                    $notification_data = [
+                        'id' => '',
+                        'type' => 'new_order_requested',
+                        'subject' =>  __('message.new_order_requested'),
+                        'message' => __('message.new_order_requested'),
+                    ];
+                    $nearby_delivery_man->notify(new CommonNotification($notification_data['type'], $notification_data));
+                }
 
-            if ($nearby_deliveryperson != null) {
+                $delivery_man_ids[] = $nearby_delivery_man->id;
+                $order_data->nearby_driver_ids = json_encode($delivery_man_ids);
+                $order_data->status = 'courier_assigned';
+                $order_data->save();
+
+                OrderBid::create([
+                    'order_id' => $order_data->id,
+                    'is_bid_accept' => null, 
+                    'delivery_man_id' => $nearby_delivery_man->id,
+                    'bid_amount' => null,
+                    'notes' => null,
+                ]); 
+
+                $this->updateFirebaseOrderData($order_data, $delivery_man_ids);
+            }
+            /* if ($nearby_deliveryperson != null) {
                 $data = [
-                    'auto_assign' => 1,
+                    'auto_assign' => 0,
                     'cancelled_delivery_man_ids' => array_key_exists('cancelled_delivery_man_ids', $request_data) ? $request_data['cancelled_delivery_man_ids'] : null,
-                    'delivery_man_id' => $nearby_deliveryperson->id,
+                    'delivery_man_id' => null,
                     'status' => 'courier_assigned',
                 ];
                 $order_data->fill($data)->update();
@@ -82,7 +115,7 @@ trait OrderTrait
                     'delivery_man_id' => null,
                 ];
                 $order_data->fill($data)->update();
-            }
+            } */
         }
         return $order_data;
     }

@@ -361,6 +361,28 @@
                 }
             });
         })
+        
+        $(document).on('change','.change_check_without_wallet', function() {
+
+            var status = $(this).prop('checked') == true ? 1 : 0;
+
+         
+            var id = $(this).attr('data-id');
+            var type = $(this).attr('data-type');
+            $.ajax({
+                type: "GET",
+                dataType: "json",
+                url: "{{ route('changeCheckWithoutWallet') }}",
+                data: { 'check_without_wallet': status, 'id': id ,'type': type  },
+                success: function(data){
+                    if(data.status == false){
+                        errorMessage(data.message)
+                    }else{
+                        showMessage(data.message);
+                    }
+                }
+            });
+        })
 
         $(document).on('change', '.change_verify', function() {
             var status = $(this).prop('checked');

@@ -450,6 +450,7 @@
                                                                         <th scope='col'>{{ __('message.order_id') }}</th>
                                                                         <th scope='col'>{{ __('message.earning') }}</th>
                                                                         <th scope='col'>{{ __('message.admin_commission') }}</th>
+                                                                        <th scope='col'>Insurance Deducted</th>
                                                                         <th scope='col'>{{ __('message.payment_type') }}</th>
                                                                         <th scope='col'>{{ __('message.date') }}</th>
                                                                     </tr>
@@ -457,10 +458,12 @@
                                                                 <tbody>
                                                                     @if( count($earning_detail_items) > 0)
                                                                         @foreach ( $earning_detail_items  as $value)
+                                                                            @php $order = \App\Models\Order::where('id', $value->order_id)->first(); @endphp
                                                                             <tr>
                                                                                 <td><a href="{{ route('order.show', $value->order_id) }}">{{ optional($value)->order_id }}</a></td>
                                                                                 <td>{{ getPriceFormat($value->delivery_man_commission) ?? '-' }}</td>
                                                                                 <td>{{ getPriceFormat($value->admin_commission) ?? '-' }}</td>
+                                                                                <td>{{@$order->insurance_charge}}</td>
                                                                                 <td>{{ $value->payment_type ?? '-' }}</td>
                                                                                 <td>{{ dateAgoFormate($value->created_at) ?? '-' }}</td>
                                                                             </tr>

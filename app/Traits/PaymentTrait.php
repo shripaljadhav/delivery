@@ -341,7 +341,8 @@ trait PaymentTrait {
         $admin_commission = $order->city->admin_commission ?? 0;
 
         // tip not added in the order total_amount
-        $order_amount = $payment->total_amount;
+        $order_amount = $order->total_amount;
+        $insurance_charge = $order->insurance_charge;
 
         if( $commission_type == 'percentage' ) {
             $admin_commission = $admin_commission ? ( $order_amount / 100) * $admin_commission: 0;
@@ -394,7 +395,7 @@ trait PaymentTrait {
                     [ 'user_id' => $admin_id ]
                 );
 
-                $admin_wallet->total_amount -= $payment->delivery_man_commission;
+                $admin_wallet->total_amount -= ($payment->delivery_man_commission + $insurance_charge);
                 $admin_wallet->save();
 
                 $admin_wallet_history = [
@@ -402,7 +403,7 @@ trait PaymentTrait {
                     'type'              => 'debit',
                     'transaction_type'  => 'Deducted delivery man commission from Order#'.$payment->order_id,
                     'currency'          => $currency,
-                    'amount'            => $payment->delivery_man_commission,
+                    'amount'            => $payment->delivery_man_commission + $insurance_charge,
                     'balance'           => $admin_wallet->total_amount,
                     'order_id'          => $payment->order_id,
                     'datetime'          => date('Y-m-d H:i:s'),
@@ -416,7 +417,7 @@ trait PaymentTrait {
                 $delivery_man_wallet = Wallet::firstOrCreate(
                     [ 'user_id' => $order->delivery_man_id ]
                 );
-                $delivery_man_wallet->total_amount -= $admin_commission;
+                $delivery_man_wallet->total_amount -= ($admin_commission + $insurance_charge);
                 $delivery_man_wallet->save();
 
                 $delivery_man_wallet_history = [
@@ -424,7 +425,7 @@ trait PaymentTrait {
                     'type'              => 'debit',
                     'transaction_type'  => 'Deducted admin commission from order#'.$payment->order_id,
                     'currency'          => $currency,
-                    'amount'            => $admin_commission,
+                    'amount'            => ($admin_commission + $insurance_charge),
                     'balance'           => $delivery_man_wallet->total_amount,
                     'order_id'          => $payment->order_id,
                     'datetime'          => date('Y-m-d H:i:s'),
@@ -434,7 +435,7 @@ trait PaymentTrait {
                 $admin_wallet = Wallet::firstOrCreate(
                     [ 'user_id' => $admin_id ]
                 );
-                $admin_wallet->total_amount = $admin_wallet->total_amount + $admin_commission;
+                $admin_wallet->total_amount = $admin_wallet->total_amount + $admin_commission + $insurance_charge;
                 $admin_wallet->save();
 
                 $admin_wallet_history = [
@@ -442,7 +443,7 @@ trait PaymentTrait {
                     'type'              => 'credit',
                     'transaction_type'  => 'Received commission from Order#'.$payment->order_id,
                     'currency'          => $currency,
-                    'amount'            => $admin_commission,
+                    'amount'            => $admin_commission + $insurance_charge,
                     'balance'           => $admin_wallet->total_amount,
                     'order_id'          => $payment->order_id,
                     'datetime'          => date('Y-m-d H:i:s'),
@@ -457,7 +458,7 @@ trait PaymentTrait {
                 $admin_wallet = Wallet::firstOrCreate(
                     [ 'user_id' => $admin_id ]
                 );
-                $admin_wallet->total_amount -= $payment->delivery_man_commission;
+                $admin_wallet->total_amount -= ($payment->delivery_man_commission + $insurance_charge);
                 $admin_wallet->save();
 
                 $admin_wallet_history = [
@@ -465,7 +466,7 @@ trait PaymentTrait {
                     'type'              => 'debit',
                     'transaction_type'  => 'Deducted delivery man commission from Order#'.$payment->order_id,
                     'currency'          => $currency,
-                    'amount'            => $payment->delivery_man_commission,
+                    'amount'            => $payment->delivery_man_commission + $insurance_charge,
                     'balance'           => $admin_wallet->total_amount,
                     'order_id'          => $payment->order_id,
                     'datetime'          => date('Y-m-d H:i:s'),

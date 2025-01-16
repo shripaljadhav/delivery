@@ -35,6 +35,7 @@ class PaymentResource extends JsonResource
             'delivery_man_fee'      => $this->delivery_man_fee,
             'delivery_man_tip'      => $this->delivery_man_tip,
             'delivery_man_commission'=> $this->delivery_man_commission,
+            'insurance_amount'=> optional($this->order)->insurance_charge,
         ];
     }
 }

@@ -125,6 +125,7 @@ class Order extends Model implements HasMedia
     public function scopeMyOrder($query)
     {
         $user = auth()->user();
+        
         if (in_array($user->user_type, ['admin'])) {
             return $query;
         }
@@ -134,8 +135,16 @@ class Order extends Model implements HasMedia
         }
 
         if ($user->user_type == 'delivery_man') {
-            return $query->whereHas('delivery_man', function ($q) use ($user) {
+            /* return $query->whereHas('delivery_man', function ($q) use ($user) {
                 $q->where('delivery_man_id', $user->id);
+            }); */
+             return $query->where(function($query) use($user) {
+                $query->whereHas('delivery_man', function ($q) use ($user) {
+                    $q->where('delivery_man_id', $user->id);
+                })
+                ->orWhereHas('bidrequests', function ($q) use ($user) {
+                    $q->where('delivery_man_id', $user->id);
+                });
             });
         }
         return $query;
@@ -283,5 +292,10 @@ class Order extends Model implements HasMedia
     public function saveUserAddress()
     {
         return $this->belongsTo(UserAddress::class, 'client_id', 'user_id');
+    }
+    
+    public function bidrequests()
+    {
+        return $this->belongsTo(OrderBid::class, 'id', 'order_id');
     }
 }

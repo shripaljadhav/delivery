@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use App\Models\City;
 use App\Models\ExtraCharge;
+use App\Models\OrderBid;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class OrderResource extends JsonResource
@@ -14,7 +15,7 @@ class OrderResource extends JsonResource
      * @param  \Illuminate\Http\Request  $request
      * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
      */
-    public function toArray($request)
+    public function toArray($request,$deliverymanid = '')
     {
         $pdfUrl = null;
          if($this->status == 'completed' ){
@@ -30,6 +31,7 @@ class OrderResource extends JsonResource
             'client_id'                     => (int)$this->client_id,
             'client_name'                   => optional($this->client)->name,
             'date'                          => $this->date,
+            'bid_type'                          => $this->bid_type,
             // 'readable_date'                 => timeAgoFormat($this->created_at),
             'pickup_point'                  => $this->pickup_point,
             'delivery_point'                => $this->delivery_point,
@@ -79,6 +81,18 @@ class OrderResource extends JsonResource
             'extra_charge_list' => $extraCharge,
             'city_details_list' => $cityData,
             'base_total' =>(int) $basetotal,
+             'check_without_wallet' => $this->getCheckWithoutWallet($this->id,$request),
         ];
+    }
+    
+     private function getCheckWithoutWallet($id, $request)
+    {
+        
+        $OrderBid = OrderBid::with(['deliveryMan'])->where('order_id',$this->id)->where('delivery_man_id',@$request->delivery_man_id)->first();
+        if($OrderBid){
+            return $OrderBid->deliveryMan ? $OrderBid->deliveryMan->check_without_wallet : 0;
+        }else{
+            return 0;
+        }
     }
 }

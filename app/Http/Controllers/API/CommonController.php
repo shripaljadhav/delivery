@@ -6,11 +6,11 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
-use App\Models\Setting;
-use App\Models\AppSetting;
 
 class CommonController extends Controller
 {
+    private $googleMapApiKey = 'AIzaSyD109WXndE4efQIRVVObr55-QFVbwpOHbA'; // Hardcoded API key
+
     public function placeAutoComplete(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -19,21 +19,20 @@ class CommonController extends Controller
             'language' => 'required'
         ]);
 
-        if ( $validator->fails() ) {
+        if ($validator->fails()) {
             $data = [
                 'status' => 'false',
                 'message' => $validator->errors()->first(),
-                'all_message' =>  $validator->errors()
+                'all_message' => $validator->errors()
             ];
 
-            return json_custom_response($data,400);
+            return json_custom_response($data, 400);
         }
 
-        $google_map_api_key = env('GOOGLE_MAP_API_KEY');
-        // $response = Http::get('https://maps.googleapis.com/maps/api/place/autocomplete/json?input='.request('search_text').'&components=country:'.request('country_code').'&language:'.request('language').'&key='.$google_map_api_key);
         $response = Http::withHeaders([
             'Accept-Language' => request('language'),
-        ])->get('https://maps.googleapis.com/maps/api/place/autocomplete/json?input='.request('search_text').'&components=country:'.request('country_code').'&key='.$google_map_api_key);
+        ])->get('https://maps.googleapis.com/maps/api/place/autocomplete/json?input=' . request('search_text') . '&components=country:' . request('country_code') . '&key=' . $this->googleMapApiKey);
+
         return $response->json();
     }
 
@@ -43,18 +42,17 @@ class CommonController extends Controller
             'placeid' => 'required',
         ]);
 
-        if ( $validator->fails() ) {
+        if ($validator->fails()) {
             $data = [
                 'status' => 'false',
                 'message' => $validator->errors()->first(),
-                'all_message' =>  $validator->errors()
+                'all_message' => $validator->errors()
             ];
 
-            return json_custom_response($data,400);
+            return json_custom_response($data, 400);
         }
 
-        $google_map_api_key = env('GOOGLE_MAP_API_KEY');
-        $response = Http::get('https://maps.googleapis.com/maps/api/place/details/json?placeid='.$request->placeid.'&key='.$google_map_api_key);
+        $response = Http::get('https://maps.googleapis.com/maps/api/place/details/json?placeid=' . $request->placeid . '&key=' . $this->googleMapApiKey);
 
         return $response->json();
     }
@@ -66,18 +64,17 @@ class CommonController extends Controller
             'destinations' => 'required',
         ]);
 
-        if ( $validator->fails() ) {
+        if ($validator->fails()) {
             $data = [
                 'status' => 'false',
                 'message' => $validator->errors()->first(),
-                'all_message' =>  $validator->errors()
+                'all_message' => $validator->errors()
             ];
 
-            return json_custom_response($data,400);
+            return json_custom_response($data, 400);
         }
 
-        $google_map_api_key = env('GOOGLE_MAP_API_KEY');
-        $response = Http::get('https://maps.googleapis.com/maps/api/distancematrix/json?origins='.$request->origins.'&destinations='.$request->destinations.'&key='.$google_map_api_key.'&mode=driving');
+        $response = Http::get('https://maps.googleapis.com/maps/api/distancematrix/json?origins=' . $request->origins . '&destinations=' . $request->destinations . '&key=' . $this->googleMapApiKey . '&mode=driving');
 
         return $response->json();
     }
