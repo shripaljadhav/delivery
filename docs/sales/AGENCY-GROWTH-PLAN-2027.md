@@ -476,4 +476,12 @@ You until overload; dedicated BDE when demos &gt;15/month or response SLAs break
 
 ---
 
+## 16. Four-vertical operating pack
+
+Detailed daily schedule, tools, automation, scripts, and close checklists:
+
+→ **[`verticals/README.md`](./verticals/README.md)**
+
+---
+
 *This plan is business guidance based on public India SMB pricing patterns and a live audit of nexteradigitaltech.in. Adjust commercials to your real delivery cost. Have a CA/lawyer review contracts.*

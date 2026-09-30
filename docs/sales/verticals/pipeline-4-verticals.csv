@@ -1,0 +1,5 @@
+lead_id,date_added,vertical,source,org_name,city,contact_name,role,phone,whatsapp,email,product_fit,pain_notes,stage,next_action,next_action_date,demo_date,proposal_ref,one_time_inr,amc_monthly_inr,expected_close,won_lost_reason,owner
+NX-C-001,2026-09-30,clinic,Google Maps,Sample Dental Care,Pune,Dr. Sample,Owner,9834162696,9834162696,,CareDesk,Phone booking + no-shows,Lead,Send WA intro,2026-10-01,,,,,2026-10-20,,You
+NX-H-001,2026-09-30,hospital,Google Maps,Sample Nursing Home,Pune,Admin Sample,Admin,9834162696,9834162696,,HospitalOS,Excel billing,Lead,Send WA intro,2026-10-01,,,,,2026-10-31,,You
+NX-S-001,2026-09-30,school,IndiaMART,Sample Coaching,Pune,Centre Head,Owner,9834162696,9834162696,,LearnPulse,Manual tests + fees,Lead,Reply RFQ,2026-10-01,,,,,2026-11-15,,You
+NX-R-001,2026-09-30,restaurant,Google Maps,Sample Kitchen,Pune,Owner Sample,Owner,9834162696,9834162696,,FoodKing,WhatsApp orders lost,Lead,Evening WA,2026-10-01,,,,,2026-10-18,,You

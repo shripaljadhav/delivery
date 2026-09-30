@@ -2,7 +2,8 @@
 
 | Doc | Purpose |
 |---|---|
-| [AGENCY-GROWTH-PLAN-2027.md](./AGENCY-GROWTH-PLAN-2027.md) | **Master plan** — product priority, pricing, leads, team, AI, ₹1 Cr path |
-| [hospital/](./hospital/) | Hospital / clinic vertical kit (HospitalOS + CareDesk) |
+| [AGENCY-GROWTH-PLAN-2027.md](./AGENCY-GROWTH-PLAN-2027.md) | Strategy — ₹1 Cr path, market ranking, team, AI |
+| [verticals/](./verticals/) | **Operate here daily** — 4 verticals, time blocks, tools, scripts, close path |
+| [hospital/](./hospital/) | Deep hospital kit (linked from verticals) |
 
-Start with the master plan, then use the hospital kit for the first outreach wave.
+**Start today:** `verticals/DAILY-OPERATING-SYSTEM.md` → run clinic morning outreach.
