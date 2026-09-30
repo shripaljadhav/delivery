@@ -1,0 +1,2 @@
+lead_id,date_added,source,org_name,city,contact_name,role,phone,whatsapp,email,segment,product_fit,pain_notes,stage,next_action,next_action_date,demo_date,proposal_ref,one_time_inr,amc_monthly_inr,expected_close,won_lost_reason,owner
+NX-H-001,2026-09-30,Google Maps,Sample Nursing Home,Pune,Dr. Example,Owner,9834162696,9834162696,,hospital,HospitalOS,Excel billing + pharmacy mismatch,Lead,Send WhatsApp intro,2026-10-01,,,,,2026-10-31,,You
