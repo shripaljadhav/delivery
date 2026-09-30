@@ -2,6 +2,8 @@
 
 Use this folder before any hospital / clinic outreach.
 
+Agency-wide strategy (product ranking, ₹1 Cr plan, team, AI): see [../AGENCY-GROWTH-PLAN-2027.md](../AGENCY-GROWTH-PLAN-2027.md).
+
 ## Products to sell now
 
 | Product | Best for | Live demo | Pitch first? |
