@@ -6,3 +6,6 @@
 .env
 .env.backup
 .phpunit.result.cache
+
+# Host-specific phpMyAdmin symlink (breaks on Hostinger shared hosting)
+/public/phpmyadmin

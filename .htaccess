@@ -1,19 +1,15 @@
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
-        Options -MultiViews
+        Options -MultiViews -Indexes
     </IfModule>
-   RewriteEngine On
-   RewriteCond %{HTTP:Authorization} .+
-   RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-   RewriteCond %{REQUEST_FILENAME} -d [OR]
-   RewriteCond %{REQUEST_FILENAME} -f
+    RewriteEngine On
 
-   RewriteRule ^ ^$1 [N]
-   RewriteCond %{REQUEST_URI} (.\w+$) [NC]
-   RewriteRule ^(.*)$ public/$1
-   
-   RewriteCond %{REQUEST_FILENAME} !-d
-   RewriteCond %{REQUEST_FILENAME} !-f
-   RewriteRule ^ server.php
+    # Preserve Authorization header for API/Sanctum
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Send all requests into Laravel's public front controller tree.
+    # Avoid [N] rewrite loops that can 502 on LiteSpeed/Hostinger.
+    RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
